@@ -9,7 +9,6 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { Card } from '../../models/card';
 import { CommonModule } from '@angular/common';
-import { Tooltip } from 'bootstrap';
 
 @Component({
   selector: 'app-card',
@@ -20,7 +19,7 @@ import { Tooltip } from 'bootstrap';
 })
 export class CardComponent implements AfterViewInit {
   @Input() card!: Card;
-
+  private tooltip: any;
   constructor(
     private elementRef: ElementRef,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -34,13 +33,22 @@ export class CardComponent implements AfterViewInit {
 
   private initializeTooltip() {
     import('bootstrap').then((bootstrap) => {
-      new bootstrap.Tooltip(
+      this.tooltip = new bootstrap.Tooltip(
         this.elementRef.nativeElement.querySelector('.card'),
         {
-          trigger: 'hover',
-          delay: { show: 500, hide: 100 },
+          trigger: 'manual',
+          html: true,
         }
       );
+
+      this.elementRef.nativeElement.addEventListener('mouseenter', () => {
+        this.tooltip.show();
+        setTimeout(() => this.tooltip.hide(), 2000); // Hide after 2 seconds
+      });
+
+      this.elementRef.nativeElement.addEventListener('mouseleave', () => {
+        this.tooltip.hide();
+      });
     });
   }
 

@@ -1,0 +1,19 @@
+<div class="scores">
+  <h3>Scores - Round {{ roundNumber }}</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Round Score</th>
+        <th>Total Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let score of roundScores; let i = index">
+        <td>Player {{ i + 1 }}</td>
+        <td>{{ score }}</td>
+        <td>{{ totalScores[i] }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

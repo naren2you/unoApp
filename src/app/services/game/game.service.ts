@@ -11,6 +11,19 @@ export class GameService {
   private players: Card[][] = [];
   private discardPile: Card[] = [];
   private direction = 1; // 1 for clockwise, -1 for counterclockwise
+  private readonly WINNING_SCORE = 500;
+
+  private roundScoresSubject = new BehaviorSubject<number[]>([]);
+  roundScores$ = this.roundScoresSubject.asObservable();
+
+  private totalScoresSubject = new BehaviorSubject<number[]>([]);
+  totalScores$ = this.totalScoresSubject.asObservable();
+
+  private gameOverSubject = new Subject<number>(); // Emits winner index
+  gameOver$ = this.gameOverSubject.asObservable();
+
+  private roundNumberSubject = new BehaviorSubject<number>(1);
+  roundNumber$ = this.roundNumberSubject.asObservable();
 
   private directionSubject = new BehaviorSubject<string>('Clockwise');
   direction$ = this.directionSubject.asObservable();
@@ -42,9 +55,20 @@ export class GameService {
     this.players = Array(numPlayers)
       .fill(null)
       .map(() => []);
+    this.totalScoresSubject.next(new Array(numPlayers).fill(0));
+    this.startNewRound();
+  }
+
+  private startNewRound() {
     this.dealInitialHands();
     this.discardPile = [this.deckService.drawCard()!];
     this.currentCardSubject.next(this.discardPile[this.discardPile.length - 1]);
+    this.currentPlayerIndex = 0;
+    this.currentPlayerIndexSubject.next(this.currentPlayerIndex);
+    this.direction = 1;
+    this.directionSubject.next('Clockwise');
+    this.roundScoresSubject.next(new Array(this.players.length).fill(0));
+    this.roundNumberSubject.next(this.roundNumberSubject.getValue() + 1);
   }
 
   private dealInitialHands() {
@@ -85,7 +109,7 @@ export class GameService {
           this.drawTwoForNextPlayer();
           break;
         case 'Wild Draw Four':
-          this.wildDrawFour()
+          this.wildDrawFour();
           this.colorSelectionSubject.next();
           return true; // Don't proceed with next turn yet
         case 'Wild':
@@ -95,10 +119,58 @@ export class GameService {
           this.nextTurn();
       }
 
+      if (player.length === 0) {
+        this.endRound(playerIndex);
+      }
+
       return true;
     }
 
     return false;
+  }
+
+  private endRound(winnerIndex: number) {
+    const scores = this.calculateScores(winnerIndex);
+    this.roundScoresSubject.next(scores);
+
+    const totalScores = this.totalScoresSubject.getValue();
+    for (let i = 0; i < scores.length; i++) {
+      totalScores[i] += scores[i];
+    }
+    this.totalScoresSubject.next(totalScores);
+
+    if (totalScores[winnerIndex] >= this.WINNING_SCORE) {
+      this.gameOverSubject.next(winnerIndex);
+    } else {
+      this.startNewRound();
+    }
+  }
+
+  private calculateScores(winnerIndex: number): number[] {
+    const scores = new Array(this.players.length).fill(0);
+    for (let i = 0; i < this.players.length; i++) {
+      if (i !== winnerIndex) {
+        scores[winnerIndex] += this.players[i].reduce(
+          (sum, card) => sum + this.getCardValue(card),
+          0
+        );
+      }
+    }
+    return scores;
+  }
+
+  private getCardValue(card: Card): number {
+    switch (card.value) {
+      case 'Skip':
+      case 'Reverse':
+      case 'Draw Two':
+        return 20;
+      case 'Wild':
+      case 'Wild Draw Four':
+        return 50;
+      default:
+        return parseInt(card.value) || 0;
+    }
   }
 
   callUno(playerIndex: number) {

@@ -1,117 +1,129 @@
 <div class="container-fluid mt-3">
   <app-status-bar></app-status-bar>
-  <div class="row">
-    <div class="col-md-3" *ngFor="let hand of playerHands; let i = index">
-      <div class="card mb-3">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">
-            Player {{ i + 1 }}
-            <span
-              *ngIf="i === currentPlayerIndex"
-              class="badge bg-warning text-dark ms-2"
+  <div *ngIf="!gameOver">
+    <div class="row">
+      <div class="col-md-3" *ngFor="let hand of playerHands; let i = index">
+        <div class="card mb-3">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+              Player {{ i + 1 }}
+              <span
+                *ngIf="i === currentPlayerIndex"
+                class="badge bg-warning text-dark ms-2"
+              >
+                Current Turn
+              </span>
+            </h5>
+          </div>
+          <div class="card-body">
+            <app-player-hand
+              [cards]="hand"
+              [isCurrentPlayer]="i === currentPlayerIndex"
+              (cardPlayed)="playCard(i, $event)"
+            ></app-player-hand>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Current Card</h5>
+          </div>
+          <div class="card-body">
+            <app-card *ngIf="currentCard" [card]="currentCard"></app-card>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Actions</h5>
+          </div>
+          <div class="card-body">
+            <button
+              class="btn btn-primary me-2"
+              *ngIf="currentPlayerIndex !== -1"
+              (click)="drawCard()"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Draw a card from the deck"
             >
-              Current Turn
-            </span>
-          </h5>
+              <i class="bi bi-hand-index"></i> Draw Card
+            </button>
+            <button
+              class="btn btn-danger"
+              *ngIf="canCallUno()"
+              (click)="callUno()"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Call UNO when you have one card left"
+            >
+              <i class="bi bi-exclamation-circle"></i> Call UNO!
+            </button>
+          </div>
         </div>
-        <div class="card-body">
-          <app-player-hand
-            [cards]="hand"
-            [isCurrentPlayer]="i === currentPlayerIndex"
-            (cardPlayed)="playCard(i, $event)"
-          ></app-player-hand>
+      </div>
+    </div>
+
+    <div class="row mt-4" *ngIf="isSelectingColor">
+      <div class="col-md-6 offset-md-3">
+        <div class="card">
+          <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Select a color</h5>
+          </div>
+          <div class="card-body">
+            <button
+              class="btn btn-danger me-2"
+              (click)="selectColor('red')"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Select Red"
+            >
+              <i class="bi bi-circle-fill"></i> Red
+            </button>
+            <button
+              class="btn btn-primary me-2"
+              (click)="selectColor('blue')"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Select Blue"
+            >
+              <i class="bi bi-circle-fill"></i> Blue
+            </button>
+            <button
+              class="btn btn-success me-2"
+              (click)="selectColor('green')"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Select Green"
+            >
+              <i class="bi bi-circle-fill"></i> Green
+            </button>
+            <button
+              class="btn btn-warning"
+              (click)="selectColor('yellow')"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Select Yellow"
+            >
+              <i class="bi bi-circle-fill"></i> Yellow
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="row mt-4">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header bg-info text-white">
-          <h5 class="mb-0">Current Card</h5>
-        </div>
-        <div class="card-body">
-          <app-card *ngIf="currentCard" [card]="currentCard"></app-card>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0">Actions</h5>
-        </div>
-        <div class="card-body">
-          <button
-            class="btn btn-primary me-2"
-            *ngIf="currentPlayerIndex !== -1"
-            (click)="drawCard()"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="Draw a card from the deck"
-          >
-            <i class="bi bi-hand-index"></i> Draw Card
-          </button>
-          <button
-            class="btn btn-danger"
-            *ngIf="canCallUno()"
-            (click)="callUno()"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="Call UNO when you have one card left"
-          >
-            <i class="bi bi-exclamation-circle"></i> Call UNO!
-          </button>
-        </div>
-      </div>
-    </div>
+  <div *ngIf="gameOver" class="text-center">
+    <h2>Game Over!</h2>
+    <h3>{{ getWinnerMessage() }}</h3>
+    <button class="btn btn-primary" (click)="startNewGame()">
+      Start New Game
+    </button>
   </div>
 
-  <div class="row mt-4" *ngIf="isSelectingColor">
-    <div class="col-md-6 offset-md-3">
-      <div class="card">
-        <div class="card-header bg-warning text-dark">
-          <h5 class="mb-0">Select a color</h5>
-        </div>
-        <div class="card-body">
-          <button
-            class="btn btn-danger me-2"
-            (click)="selectColor('red')"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="Select Red"
-          >
-            <i class="bi bi-circle-fill"></i> Red
-          </button>
-          <button
-            class="btn btn-primary me-2"
-            (click)="selectColor('blue')"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="Select Blue"
-          >
-            <i class="bi bi-circle-fill"></i> Blue
-          </button>
-          <button
-            class="btn btn-success me-2"
-            (click)="selectColor('green')"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="Select Green"
-          >
-            <i class="bi bi-circle-fill"></i> Green
-          </button>
-          <button
-            class="btn btn-warning"
-            (click)="selectColor('yellow')"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            title="Select Yellow"
-          >
-            <i class="bi bi-circle-fill"></i> Yellow
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <app-scores></app-scores>
 </div>

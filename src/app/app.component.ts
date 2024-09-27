@@ -13,11 +13,19 @@ import { GameService } from './services/game/game.service';
 import { CardComponent } from './components/card/card.component';
 import { PlayerHandComponent } from './components/playerHand/player-hand/player-hand.component';
 import { StatusBarComponent } from './components/statusBar/status-bar/status-bar.component';
+import { ScoresComponent } from './components/scores/scores/scores.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, CardComponent, PlayerHandComponent, StatusBarComponent],
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    CardComponent,
+    PlayerHandComponent,
+    StatusBarComponent,
+    ScoresComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
@@ -27,6 +35,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   currentPlayerIndex: number = 0;
   isSelectingColor: boolean = false;
   unoCalled: boolean = false;
+  gameOver: boolean = false;
+  winner: number | null = null;
 
   constructor(
     private gameService: GameService,
@@ -77,6 +87,23 @@ export class AppComponent implements OnInit, AfterViewInit {
       alert(`Player ${playerIndex + 1} drew 2 cards as a penalty!`);
       this.updateGameState();
     });
+
+    this.gameService.gameOver$.subscribe((winnerIndex) => {
+      this.gameOver = true;
+      this.winner = winnerIndex;
+    });
+  }
+
+  startNewGame() {
+    this.gameOver = false;
+    this.winner = null;
+    this.gameService.initializeGame(4); // Or however many players you want
+  }
+
+  getWinnerMessage(): string {
+    return this.winner !== null
+      ? `Player ${this.winner + 1} wins!`
+      : 'Game Over!';
   }
 
   private updateGameState() {
