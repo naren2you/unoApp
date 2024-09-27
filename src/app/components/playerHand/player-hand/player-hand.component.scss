@@ -1,0 +1,15 @@
+.player-hand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+}
+.card-clickable {
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.card-clickable:hover {
+  transform: translateY(-5px);
+}

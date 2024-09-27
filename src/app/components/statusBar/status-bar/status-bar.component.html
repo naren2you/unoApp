@@ -1,0 +1,16 @@
+<div class="status-bar">
+  <div class="direction">
+    <i
+      class="bi"
+      [ngClass]="{
+        'bi-arrow-clockwise': isClockwise,
+        'bi-arrow-counterclockwise': !isClockwise
+      }"
+    ></i>
+    Direction: {{ direction }}
+  </div>
+  <div class="special-action" *ngIf="specialAction">
+    <i class="bi bi-exclamation-circle"></i>
+    {{ specialAction }}
+  </div>
+</div>

@@ -1,0 +1,9 @@
+<div class="d-flex flex-wrap">
+  <app-card
+    *ngFor="let card of cards; let i = index"
+    [card]="card"
+    (click)="playCard(i)"
+    [ngClass]="{ 'card-clickable': isCurrentPlayer }"
+    class="me-2 mb-2"
+  ></app-card>
+</div>

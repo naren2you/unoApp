@@ -1,0 +1,12 @@
+<div
+  class="card"
+  [ngStyle]="{ 'background-color': card.color, color: textColor }"
+  [attr.data-bs-toggle]="isSpecialCard() ? 'tooltip' : null"
+  [attr.data-bs-placement]="'top'"
+  [attr.title]="tooltipText"
+>
+  <div class="card-body d-flex justify-content-center align-items-center">
+    <span *ngIf="!isSpecialCard()" class="h4 mb-0">{{ card.value }}</span>
+    <i *ngIf="isSpecialCard()" [class]="cardIcon" style="font-size: 2rem"></i>
+  </div>
+</div>
